@@ -23,10 +23,16 @@ const store = new Vuex.Store({
       state.feeds.push(payload)
     },
     initialiseStore (state) {
-      if (localStorage.getItem('store')) {
-        this.replaceState(
-          Object.assign(state, JSON.parse(localStorage.getItem('store')))
-        )
+      if (localStorage.getItem('store') && localStorage.getItem('exipirationDate')) {
+        const expirationDate = JSON.parse(localStorage.getItem('exipirationDate'))
+        if (expirationDate < JSON.parse(JSON.stringify(new Date()))) {
+          localStorage.removeItem('exipirationDate')
+          localStorage.removeItem('store')
+        } else {
+          this.replaceState(
+            Object.assign(state, JSON.parse(localStorage.getItem('store')))
+          )
+        }
       }
     }
   },
@@ -78,6 +84,11 @@ const store = new Vuex.Store({
 
 store.subscribe((mutation, state) => {
   localStorage.setItem('store', JSON.stringify(state))
+
+  // set exipration date
+  let exipirationDate = new Date()
+  exipirationDate.setHours(exipirationDate.getHours() + 1)
+  localStorage.setItem('exipirationDate', JSON.stringify(exipirationDate))
 })
 
 export default store
